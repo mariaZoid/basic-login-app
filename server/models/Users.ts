@@ -6,8 +6,9 @@ import {
     DataTypes
 } from 'sequelize';
 import {sequelize} from './sequelize';
-
 import { z } from 'zod';
+
+
 export type UserSafeDto = {
     id: number;
     email: string;
@@ -42,8 +43,8 @@ export class User extends Model<
     }
 }
 
-User.init(
-    {
+export const UsersRepository = sequelize.define(
+    "Users", {
         id: {
             type: DataTypes.INTEGER,
             autoIncrement: true,
@@ -78,7 +79,6 @@ User.init(
     },
     {
         tableName: 'users',
-        underscored: true,
-        sequelize,
+        underscored: true
     }
 );
