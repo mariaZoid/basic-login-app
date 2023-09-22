@@ -6,8 +6,6 @@ import {
     DataTypes
 } from 'sequelize';
 import {sequelize} from './sequelize';
-import { z } from 'zod';
-
 
 export type UserSafeDto = {
     id: number;
@@ -15,10 +13,6 @@ export type UserSafeDto = {
     firstName: string;
     lastName: string;
 };
-
-export declare const EmailSchema: z.ZodEffects<z.ZodString, string, string>;
-export declare const PasswordSchema: z.ZodType<string>;
-export declare const UserSafeDtoSchema: z.ZodType<UserSafeDto>;
 
 export class User extends Model<
     InferAttributes<User>,
@@ -33,14 +27,6 @@ export class User extends Model<
     declare createdAt: CreationOptional<Date>;
     declare updatedAt: CreationOptional<Date>;
 
-    toSafeDto(): UserSafeDto {
-        return {
-            id: this.id,
-            email: this.email,
-            firstName: this.firstName,
-            lastName: this.lastName,
-        };
-    }
 }
 
 export const UsersRepository = sequelize.define(
