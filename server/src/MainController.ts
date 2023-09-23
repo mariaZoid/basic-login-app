@@ -1,8 +1,9 @@
 import express, { IRouter } from "express";
 import { z } from "zod";
 import { computeHash } from "../helpers/computeHash";
-import { User, UserSafeDto, UsersRepository } from "../models/Users";
+import { UsersRepository } from "../models/Users";
 import { BaseController } from "./BaseController";
+import { errorHandler, UnauthorizedError } from "./errorHandler";
 import { registerEndpoint } from "./RegisterEndpoint";
 
 
@@ -16,6 +17,7 @@ export class MainController extends BaseController {
     registerEndpoint(router, "/register", this.register, RegisterRequestSchema);
     registerEndpoint(router, "/login", this.login, LoginRequestSchema);
     app.use("/", router);
+    app.use(errorHandler());
   }
 
   private register = async (data: RegisterData): Promise<void> => {
@@ -44,7 +46,7 @@ export class MainController extends BaseController {
   private login = async (data: LoginData) : Promise<any> => {
     const user = await UsersRepository.findOne({where: {email: data.email}});
     if (user === null || user.dataValues.passHash !== computeHash(data.password)) {
-        throw new Error('Wrong credentials');
+        throw new UnauthorizedError('Wrong credentials');
     }
     
     return user.toSafeDto();
