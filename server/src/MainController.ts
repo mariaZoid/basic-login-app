@@ -1,9 +1,9 @@
 import express, { IRouter } from "express";
+import { z } from "zod";
 import { computeHash } from "../helpers/computeHash";
-import { User, UsersRepository } from "../models/Users";
+import { UsersRepository } from "../models/Users";
 import { BaseController } from "./BaseController";
 import { registerEndpoint } from "./RegisterEndpoint";
-import { RegisterData} from "./types/RegisterData";
 
 
 export class MainController extends BaseController {
@@ -13,13 +13,13 @@ export class MainController extends BaseController {
   registerRoutes(app: IRouter): void {
     const router = express.Router();
 
-    registerEndpoint(router, "/register", this.register);
-    registerEndpoint(router, "/login", this.register);
+    registerEndpoint(router, "/register", this.register, RegisterRequestSchema);
+    registerEndpoint(router, "/login", this.login, LoginRequestSchema);
     app.use("/", router);
   }
 
   private register = async (data: RegisterData): Promise<void> => {
-    const existingUser = await User.findOne({where: {email: data.email}});
+    const existingUser = await UsersRepository.findOne({where: {email: data.email}});
 
     if (existingUser !== null) {
         throw new Error('User already exists');
@@ -28,7 +28,7 @@ export class MainController extends BaseController {
     UsersRepository.create(
             {
                 email: data.email,
-                passHash: computeHash(data.password), // TODO: add hashing function
+                passHash: computeHash(data.password),
                 firstName: data.firstName,
                 lastName: data.lastName,
                 createdAt: now,
@@ -40,4 +40,38 @@ export class MainController extends BaseController {
             }
         );
   };
+
+  private login = async (data: LoginRequest) : Promise<void> => {
+    
+  }
 }
+
+// ********************************
+// register
+// ********************************
+export type RegisterData = {
+    password: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+};
+
+export const RegisterRequestSchema: z.ZodType<RegisterData> = z.object({
+    password: z.string(),
+    email: z.string(),
+    firstName: z.string(),
+    lastName: z.string(),
+});
+
+// ********************************
+// login
+// ********************************
+export type LoginData = {
+    password: string;
+    email: string;
+};
+
+export const LoginRequestSchema: z.ZodType<LoginData> = z.object({
+    password: z.string().min(8),
+    email: z.string(), // add email validator schema
+});
