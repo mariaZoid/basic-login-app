@@ -20,16 +20,24 @@ export class User extends Model<
 > {
     declare id: CreationOptional<number>;
     declare email: string;
-    declare passHash: string | null;
+    declare passHash: string;
     declare firstName: string;
     declare lastName: string;
 
     declare createdAt: CreationOptional<Date>;
     declare updatedAt: CreationOptional<Date>;
 
+    toSafeDto(): UserSafeDto {
+        return {
+            id: this.id,
+            email: this.email,
+            firstName: this.firstName,
+            lastName: this.lastName,
+        };
+    }
 }
 
-export const UsersRepository = sequelize.define(
+export const UsersRepository = sequelize.define<User>(
     "Users", {
         id: {
             type: DataTypes.INTEGER,
@@ -43,7 +51,7 @@ export const UsersRepository = sequelize.define(
         },
         passHash: {
             type: DataTypes.STRING,
-            allowNull: true,
+            allowNull: false,
             field: 'pass_hash',
         },
         firstName: {
@@ -68,3 +76,12 @@ export const UsersRepository = sequelize.define(
         underscored: true
     }
 );
+
+UsersRepository.prototype.toSafeDto = function() {
+        return {
+            id: this.id,
+            email: this.email,
+            firstName: this.firstName,
+            lastName: this.lastName,
+        };
+  };

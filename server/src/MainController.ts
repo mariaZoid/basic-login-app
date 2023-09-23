@@ -1,7 +1,7 @@
 import express, { IRouter } from "express";
 import { z } from "zod";
 import { computeHash } from "../helpers/computeHash";
-import { UsersRepository } from "../models/Users";
+import { User, UserSafeDto, UsersRepository } from "../models/Users";
 import { BaseController } from "./BaseController";
 import { registerEndpoint } from "./RegisterEndpoint";
 
@@ -41,8 +41,13 @@ export class MainController extends BaseController {
         );
   };
 
-  private login = async (data: LoginRequest) : Promise<void> => {
+  private login = async (data: LoginData) : Promise<any> => {
+    const user = await UsersRepository.findOne({where: {email: data.email}});
+    if (user === null || user.dataValues.passHash !== computeHash(data.password)) {
+        throw new Error('Wrong credentials');
+    }
     
+    return user.toSafeDto();
   }
 }
 
@@ -72,6 +77,6 @@ export type LoginData = {
 };
 
 export const LoginRequestSchema: z.ZodType<LoginData> = z.object({
-    password: z.string().min(8),
+    password: z.string(), // add min 8 char
     email: z.string(), // add email validator schema
 });
