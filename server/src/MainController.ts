@@ -1,11 +1,12 @@
 import express, { IRouter } from "express";
 import { z } from "zod";
 import { computeHash } from "../helpers/computeHash";
-import { User, UserSafeDto, UsersRepository } from "../models/Users";
+import { UserSafeDto, UsersRepository } from "../models/Users";
 import { BaseController } from "./BaseController";
 import { errorHandler, UnauthorizedError } from "./errorHandler";
 import { registerEndpoint } from "./RegisterEndpoint";
 import jwt from 'jsonwebtoken';
+import ms from "ms";
 
 
 export class MainController extends BaseController {
@@ -54,15 +55,18 @@ export class MainController extends BaseController {
     const userSafeDto = user.toSafeDto();
     
     const token = await this.generateJwt(userSafeDto);
-    return {userSafeDto, token };
+    return { userSafeDto, token };
   }
 
   private generateJwt = async (userData: UserSafeDto) : Promise<any> => {
     const secretKey = process.env.JWT_SECRET!;
 
-    const token = jwt.sign(userData, secretKey, { expiresIn: '1h' });
+    const expiryTime: string = '1h'; // this can be placed in a config
+    const now = new Date();
+    const tokenExpiresAt = now.getTime() + ms(expiryTime);
+    const token = jwt.sign(userData, secretKey, { expiresIn: expiryTime });
 
-    return token;
+    return { token, tokenExpiresAt };
   }
 }
 
