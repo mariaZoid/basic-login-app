@@ -1,10 +1,11 @@
 import express, { IRouter } from "express";
 import { z } from "zod";
 import { computeHash } from "../helpers/computeHash";
-import { UsersRepository } from "../models/Users";
+import { User, UserSafeDto, UsersRepository } from "../models/Users";
 import { BaseController } from "./BaseController";
 import { errorHandler, UnauthorizedError } from "./errorHandler";
 import { registerEndpoint } from "./RegisterEndpoint";
+import jwt from 'jsonwebtoken';
 
 
 export class MainController extends BaseController {
@@ -16,6 +17,7 @@ export class MainController extends BaseController {
 
     registerEndpoint(router, "/register", this.register, RegisterRequestSchema);
     registerEndpoint(router, "/login", this.login, LoginRequestSchema);
+
     app.use("/", router);
     app.use(errorHandler());
   }
@@ -41,6 +43,7 @@ export class MainController extends BaseController {
                 raw: true,
             }
         );
+        // add account verification send - email ?
   };
 
   private login = async (data: LoginData) : Promise<any> => {
@@ -48,8 +51,18 @@ export class MainController extends BaseController {
     if (user === null || user.dataValues.passHash !== computeHash(data.password)) {
         throw new UnauthorizedError('Wrong credentials');
     }
+    const userSafeDto = user.toSafeDto();
     
-    return user.toSafeDto();
+    const token = await this.generateJwt(userSafeDto);
+    return {userSafeDto, token };
+  }
+
+  private generateJwt = async (userData: UserSafeDto) : Promise<any> => {
+    const secretKey = process.env.JWT_SECRET!;
+
+    const token = jwt.sign(userData, secretKey, { expiresIn: '1h' });
+
+    return token;
   }
 }
 

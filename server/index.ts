@@ -2,13 +2,11 @@ import express from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
 import { BaseController, MainController } from "./src";
-import { errorHandler } from "./src/errorHandler";
 
 
 (async () => {
   try {
     const app = express();
-    // setup config
     require('dotenv').config();
 
     app.use(cors());
