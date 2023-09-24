@@ -1,11 +1,20 @@
-import './App.css';
+import Navbar from "./Navbar"
+import Login from "./pages/Login"
+import Home from "./pages/Home"
+import { Route, Routes } from "react-router-dom"
 
 function App() {
   return (
-    <main className="App">
-      <p> Login here </p>
-    </main>
-  );
+    <>
+      <Navbar />
+      <div className="container">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+        </Routes>
+      </div>
+    </>
+  )
 }
 
-export default App;
+export default App
